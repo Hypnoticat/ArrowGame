@@ -23,10 +23,12 @@ class Arrow(QPushButton):
         self.refresh()
 
     def resizeEvent(self, ev):
+        """Ensures the icon scales to the button size and as a square"""
         super().resizeEvent(ev)
         self.setIconSize(QSize(self.width(), self.height()))
 
     def refresh(self):
+        """Reloads the arrow image and rotates it based on the direction"""
         pixmap = self.baseIcon.pixmap(self.iconSize())
         trans = QTransform()
         trans.rotate(self.direction * (360 / self.states))
@@ -38,12 +40,13 @@ class Arrow(QPushButton):
         self.setIconSize(s)
 
     def clickAnim(self):
+        """Adds a little click animation to the clicked button"""
         thread = Thread(target=self.paintClick)
         thread.start()
 
-    def paintClick(self):
-        self.changeIconSize(self.iconSize() * 0.6)
+    def paintClick(self, time=0.1, mult=0.6):
+        self.changeIconSize(self.iconSize() * mult)
         self.refresh()
-        sleep(0.1)
+        sleep(time)
         self.changeIconSize(QSize(self.width(), self.height()))
         self.refresh()
