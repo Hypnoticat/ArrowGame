@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QLayout
 
 
 class Game(QWidget):
@@ -26,3 +26,18 @@ class Game(QWidget):
     def gameRefresh(self):
         """Refresh the game board layout"""
         self.root.setLayout(self.layout)
+
+    def resetBoard(self):
+        """Reset the game board layout"""
+        self.clearLayout(self.layout)
+
+        self.gameRefresh()
+
+    def clearLayout(self, layout):
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+            elif item.layout():
+                self.clearLayout(item.layout())

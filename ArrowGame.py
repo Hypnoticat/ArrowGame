@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QGridLayout, QVBoxLayout, QHBoxLayout, QMainWindow, QWidget, QPushButton
+from PyQt5.QtWidgets import QGridLayout, QVBoxLayout, QHBoxLayout, QMainWindow, QWidget, QPushButton, QFileDialog
 
 from Arrow import Arrow
 from Game import Game
@@ -13,6 +13,8 @@ class ArrowGame(QMainWindow, Game):
         self.setWindowTitle("Arrow Game")
         # the list of arrows in order top to bottom, left to right
         self.arrows = []
+        self.rowLayout = []
+        self.states = 0
 
         # the highlighted arrow(for assignment)
         self.selectedArrow = None
@@ -25,10 +27,14 @@ class ArrowGame(QMainWindow, Game):
         self.assocBtn = QPushButton("Associate arrows")
         self.assocBtn.setCheckable(True)
         self.assocBtn.setChecked(True)
-        self.setButton = QPushButton("Choose activating button")
+        self.setBtn = QPushButton("Choose activating button")
+        self.exportBtn = QPushButton("Export current board")
+        self.importBtn = QPushButton("Import a board")
 
         self.controlLayout.addWidget(self.assocBtn)
-        self.controlLayout.addWidget(self.setButton)
+        self.controlLayout.addWidget(self.setBtn)
+        self.controlLayout.addWidget(self.exportBtn)
+        self.controlLayout.addWidget(self.importBtn)
         self.controlDisplay.setLayout(self.controlLayout)
 
         # set the main display widget
@@ -43,7 +49,9 @@ class ArrowGame(QMainWindow, Game):
 
         # add relevant functions to the buttons
         self.assocBtn.clicked.connect(self.associateButtons)
-        self.setButton.clicked.connect(self.resetSelection)
+        self.setBtn.clicked.connect(self.resetSelection)
+        self.exportBtn.clicked.connect(self.exportBoard)
+        self.importBtn.clicked.connect(self.importBoard)
 
     def changeLayout(self, layout):
         """Change the layout of the arrows"""
@@ -57,14 +65,17 @@ class ArrowGame(QMainWindow, Game):
     def createBoard(self, rowWidths, states):
         """Iterates over each row creating the arrows and adding them to the class and screen"""
         h = 0
+        self.rowLayout = []
+        self.states = states
         for w in rowWidths:
+            self.rowLayout.append(w)
             self.createRow(w, h, states)
 
             # increment so we know the row has increased
             h += 1
 
     def createRow(self, w, h, states):
-        """Creates a row of arrows at the height specifieds"""
+        """Creates a row of arrows at the height specified"""
         if isinstance(self.layout, QGridLayout):
             for i in range(int(w)):
                 arr = Arrow(states)
@@ -128,3 +139,52 @@ class ArrowGame(QMainWindow, Game):
         """Refreshes the display and layouts"""
         self.display.setLayout(self.displayLayout)
         self.setCentralWidget(self.display)
+
+    def reset(self):
+        """Resets the display and layouts"""
+        self.arrows = []
+        self.rowLayout = []
+        self.states = 0
+        self.selectedArrow = None
+
+        self.resetBoard()
+
+        self.refresh()
+
+    def exportBoard(self):
+        expStr = str(self.states) + ":" + ','.join(str(s) for s in self.rowLayout) + ":"
+        for arr in self.arrows:
+            expStr += str(arr.direction) + "."
+            for affArr in arr.affectedArrows:
+                expStr += str(self.arrows.index(affArr)) + ","
+            expStr = expStr.rstrip(",")
+            expStr += "/"
+        expStr = expStr.rstrip("/")
+        filename = QFileDialog.getSaveFileName(self, "Save File", "", "Text Files (*.txt)")[0]
+        with open(filename, "w") as f:
+            f.write(expStr)
+
+    def importBoard(self):
+        filename = QFileDialog.getOpenFileName(self, "Open File", "", "Text Files (*.txt)")[0]
+        with open(filename, "r") as f:
+            boardStr = f.read()
+        self.reset()
+        params = boardStr.split(":")
+        states = int(params[0])
+        rowsLay = [int(x) for x in params[1].split(",")]
+        self.states = states
+        self.rowLayout = rowsLay
+
+        self.createBoard(self.rowLayout, self.states)
+
+        arrs = params[2].split("/")
+        for i in range(len(arrs)):
+            (direction, associated) = arrs[i].split(".")
+            self.arrows[i].direction = int(direction)
+            self.arrows[i].refresh()
+            if associated != "":
+                affArrs = [int(x) for x in associated.split(",")]
+                for affArr in affArrs:
+                    self.arrows[i].affectedArrows.append(self.arrows[affArr])
+
+        self.gameRefresh()
