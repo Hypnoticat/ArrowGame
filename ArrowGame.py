@@ -32,12 +32,14 @@ class ArrowGame(QMainWindow, Game):
         self.exportBtn = QPushButton("Export current board")
         self.importBtn = QPushButton("Import a board")
         self.solveBtn = QPushButton("Solve the board")
+        self.singleBtn = QPushButton("Spin individuals")
 
         self.controlLayout.addWidget(self.assocBtn)
         self.controlLayout.addWidget(self.setBtn)
         self.controlLayout.addWidget(self.exportBtn)
         self.controlLayout.addWidget(self.importBtn)
         self.controlLayout.addWidget(self.solveBtn)
+        self.controlLayout.addWidget(self.singleBtn)
         self.controlDisplay.setLayout(self.controlLayout)
 
         # set the main display widget
@@ -56,6 +58,7 @@ class ArrowGame(QMainWindow, Game):
         self.exportBtn.clicked.connect(self.exportBoard)
         self.importBtn.clicked.connect(self.importBoard)
         self.solveBtn.clicked.connect(self.solveBoard)
+        self.singleBtn.clicked.connect(self.singleArrows)
 
     def changeLayout(self, layout):
         """Change the layout of the arrows"""
@@ -125,6 +128,16 @@ class ArrowGame(QMainWindow, Game):
         for affArr in self.sender().affectedArrows:
             affArr.direction = (affArr.direction + 1) % (affArr.states)
             affArr.refresh()
+
+    def singleArrows(self):
+        for arrow in self.arrows:
+            if arrow.receivers(arrow.clicked) > 0:
+                arrow.disconnect()
+            arrow.clicked.connect(self.spinArrow)
+
+    def spinArrow(self):
+        self.sender().direction = (self.sender().direction + 1) % 4
+        self.sender().refresh()
 
     def clickToConnect(self):
         """Either selects arrow if nothing is selected or associates the arrow with the previously selected arrow"""
@@ -203,6 +216,7 @@ class ArrowGame(QMainWindow, Game):
                 m[arrInd, self.arrows.index(affArr)] = 1
             v[arrInd, 0] = (4 - arrow.direction) % 4
 
-        print(m.det())
-        pprint(m)
-        pprint(v)
+        intSol = m.solve(v)
+        for i in range(len(intSol)):
+            intSol[i,0] = intSol[i,0] % 4
+        pprint(intSol.transpose())

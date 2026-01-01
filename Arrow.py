@@ -13,8 +13,8 @@ class Arrow(QPushButton):
         self.setText("")
         #self.setFlat(True)
         self.setStyleSheet("border: none; padding: 0px;")
-        self.setFixedSize(QSize(200, 200))
-        self.setIconSize(QSize(200, 200))
+        self.setFixedSize(QSize(50, 50))
+        self.setIconSize(QSize(50, 50))
 
         self.affectedArrows = []
         self.states = states
