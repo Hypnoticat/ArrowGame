@@ -1,5 +1,6 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGridLayout, QVBoxLayout, QHBoxLayout, QMainWindow, QWidget, QPushButton, QFileDialog
+from sympy import Matrix, pprint
 
 from Arrow import Arrow
 from Game import Game
@@ -30,11 +31,13 @@ class ArrowGame(QMainWindow, Game):
         self.setBtn = QPushButton("Choose activating button")
         self.exportBtn = QPushButton("Export current board")
         self.importBtn = QPushButton("Import a board")
+        self.solveBtn = QPushButton("Solve the board")
 
         self.controlLayout.addWidget(self.assocBtn)
         self.controlLayout.addWidget(self.setBtn)
         self.controlLayout.addWidget(self.exportBtn)
         self.controlLayout.addWidget(self.importBtn)
+        self.controlLayout.addWidget(self.solveBtn)
         self.controlDisplay.setLayout(self.controlLayout)
 
         # set the main display widget
@@ -52,6 +55,7 @@ class ArrowGame(QMainWindow, Game):
         self.setBtn.clicked.connect(self.resetSelection)
         self.exportBtn.clicked.connect(self.exportBoard)
         self.importBtn.clicked.connect(self.importBoard)
+        self.solveBtn.clicked.connect(self.solveBoard)
 
     def changeLayout(self, layout):
         """Change the layout of the arrows"""
@@ -188,3 +192,17 @@ class ArrowGame(QMainWindow, Game):
                     self.arrows[i].affectedArrows.append(self.arrows[affArr])
 
         self.gameRefresh()
+
+    def solveBoard(self):
+        n = len(self.arrows)
+        m = Matrix.zeros(n, n)
+        v = Matrix.zeros(n, 1)
+        for arrow in self.arrows:
+            arrInd = self.arrows.index(arrow)
+            for affArr in arrow.affectedArrows:
+                m[arrInd, self.arrows.index(affArr)] = 1
+            v[arrInd, 0] = (4 - arrow.direction) % 4
+
+        print(m.det())
+        pprint(m)
+        pprint(v)
