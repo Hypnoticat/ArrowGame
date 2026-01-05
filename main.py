@@ -5,7 +5,7 @@ app = QApplication([])
 
 game = ArrowGame()
 game.changeLayout(QVBoxLayout())
-game.createBoard([1, 2, 3, 4, 3, 4, 3, 4, 3, 4, 3, 2, 1], 2)
+game.createBoard([3,3,3], 4)
 
 print("created board")
 game.show()

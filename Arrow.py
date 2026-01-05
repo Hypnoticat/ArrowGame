@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QIcon, QPixmap, QTransform
-from PyQt5.QtWidgets import QPushButton
+from PyQt5.QtWidgets import QPushButton, QSizePolicy
 from time import sleep
 from threading import Thread
 
@@ -13,19 +13,17 @@ class Arrow(QPushButton):
         self.setText("")
         #self.setFlat(True)
         self.setStyleSheet("border: none; padding: 0px;")
-        self.setFixedSize(QSize(50, 50))
-        self.setIconSize(QSize(50, 50))
+        #self.setFixedSize(QSize(100, 100))
+        #self.setIconSize(QSize(100, 100))
+
+        self.setMinimumSize(QSize(0, 0))
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.affectedArrows = []
         self.states = states
         self.direction = direction
 
         self.refresh()
-
-    def resizeEvent(self, ev):
-        """Ensures the icon scales to the button size and as a square"""
-        super().resizeEvent(ev)
-        self.setIconSize(QSize(self.width(), self.height()))
 
     def refresh(self):
         """Reloads the arrow image and rotates it based on the direction"""
@@ -36,17 +34,26 @@ class Arrow(QPushButton):
         rotPixmap = pixmap.transformed(trans)
         self.setIcon(QIcon(rotPixmap))
 
-    def changeIconSize(self, s):
-        self.setIconSize(s)
-
     def clickAnim(self):
         """Adds a little click animation to the clicked button"""
         thread = Thread(target=self.paintClick)
         thread.start()
 
     def paintClick(self, time=0.1, mult=0.6):
-        self.changeIconSize(self.iconSize() * mult)
+        self.setIconSize(self.iconSize() * mult)
         self.refresh()
         sleep(time)
-        self.changeIconSize(QSize(self.width(), self.height()))
+        self.setIconSize(QSize(self.width(), self.height()))
         self.refresh()
+
+    def resizeEvent(self, ev):
+        size = min(self.width(), self.height())
+        self.setIconSize(QSize(size, size))
+        self.refresh()
+        super().resizeEvent(ev)
+
+    def sizeHint(self):
+        return QSize(1, 1)
+
+    def minimumSizeHint(self):
+        return QSize(1, 1)

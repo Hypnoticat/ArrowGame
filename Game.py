@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QLayout
 class Game(QWidget):
     def __init__(self):
         super().__init__()
-        self.layout = None
+        self.layout = QVBoxLayout()
         self.root = QWidget()
 
     def chooseLayout(self, layout):
@@ -30,7 +30,6 @@ class Game(QWidget):
     def resetBoard(self):
         """Reset the game board layout"""
         self.clearLayout(self.layout)
-
         self.gameRefresh()
 
     def clearLayout(self, layout):

@@ -1,5 +1,7 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QGridLayout, QVBoxLayout, QHBoxLayout, QMainWindow, QWidget, QPushButton, QFileDialog
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QResizeEvent
+from PyQt5.QtWidgets import QGridLayout, QVBoxLayout, QHBoxLayout, QMainWindow, QWidget, QPushButton, QFileDialog, \
+    QSizePolicy
 from sympy import Matrix, pprint
 
 from Arrow import Arrow
@@ -34,6 +36,13 @@ class ArrowGame(QMainWindow, Game):
         self.solveBtn = QPushButton("Solve the board")
         self.singleBtn = QPushButton("Spin individuals")
 
+        self.assocBtn.setMinimumSize(QSize(0, 0))
+        self.setBtn.setMinimumSize(QSize(0, 0))
+        self.exportBtn.setMinimumSize(QSize(0, 0))
+        self.importBtn.setMinimumSize(QSize(0, 0))
+        self.solveBtn.setMinimumSize(QSize(0, 0))
+        self.singleBtn.setMinimumSize(QSize(0, 0))
+
         self.controlLayout.addWidget(self.assocBtn)
         self.controlLayout.addWidget(self.setBtn)
         self.controlLayout.addWidget(self.exportBtn)
@@ -45,8 +54,17 @@ class ArrowGame(QMainWindow, Game):
         # set the main display widget
         self.display = QWidget()
         self.displayLayout = QHBoxLayout()
-        self.displayLayout.addWidget(self.root)
-        self.displayLayout.addWidget(self.controlDisplay)
+
+        self.root.setMinimumSize(QSize(0, 0))
+        self.root.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.controlDisplay.setMinimumSize(QSize(0, 0))
+        self.controlDisplay.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        self.setMinimumSize(QSize(600, 400))
+
+        self.displayLayout.addWidget(self.root, 2)
+        self.displayLayout.addWidget(self.controlDisplay, 1)
+
         self.display.setLayout(self.displayLayout)
 
         # refresh the updated screen
@@ -59,6 +77,9 @@ class ArrowGame(QMainWindow, Game):
         self.importBtn.clicked.connect(self.importBoard)
         self.solveBtn.clicked.connect(self.solveBoard)
         self.singleBtn.clicked.connect(self.singleArrows)
+
+        self.display.setLayout(self.displayLayout)
+        self.setCentralWidget(self.display)
 
     def changeLayout(self, layout):
         """Change the layout of the arrows"""
@@ -154,8 +175,11 @@ class ArrowGame(QMainWindow, Game):
 
     def refresh(self):
         """Refreshes the display and layouts"""
-        self.display.setLayout(self.displayLayout)
-        self.setCentralWidget(self.display)
+        #self.display.setFixedSize(self.size())
+        for arr in self.arrows:
+            arr.resizeBtn()
+            arr.refresh()
+
 
     def reset(self):
         """Resets the display and layouts"""
